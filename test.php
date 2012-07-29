@@ -5,7 +5,7 @@
 <style>
 /* 後でcssfileに退避 */
 body {
-
+	background-color: #00FFFF;
 }
 .twitImg {
 }
