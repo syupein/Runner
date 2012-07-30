@@ -5,16 +5,31 @@
 <style>
 /* 後でcssfileに退避 */
 body {
-	background-color: #00FFFF;
+	background-color: #00DDDD;
 }
 .twitImg {
 }
+th,td {
+	font-size: 20pt;
+}
+.twitText {
+	font-size: 30pt;
+}
 #tweetBoxs {
 	float: left;
-	width: 75%;
+	height: 100%;
 }
 #map {
 	height: 100%;
+	width: 100%;
+}
+.moveButton {
+	width: 100%;
+	font-size: 25pt;
+}
+.dataTable {
+	background-color: #00FFFF;
+	width: 100%;
 }
 </style>
 
@@ -28,6 +43,7 @@ var iconBack = "http://chart.apis.google.com/chart?chst=d_map_pin_letter&chld=|0
 var map;
 var mArray;
 var mCount = 0;
+var nowMarker = 0;
 
 function mapInit() {
 	var opts = {
@@ -59,6 +75,11 @@ function setLine() {
     // APIで色変えとか出来るなら外に出す。
     var polyline = new google.maps.Polyline(polylineOpts);
 }
+function setChangeNowMarker(index) {
+	mArray[nowMarker][0].setIcon(iconBack);
+	mArray[index][0].setIcon(iconNow);
+	nowMarker = index;
+}
 
 function init() {
 	mArray = new Array();
@@ -81,6 +102,8 @@ function init() {
 			40);
 	mArray[0][0].setIcon(iconNow);
 	setLine();
+	d = document.getElementById('0');
+	d.setAttribute("style","box");
 }
 
 </script>
@@ -91,18 +114,21 @@ function init() {
 
 <body onload='init()'>
 
-<div id='tweetBoxs'>
-<input type='button' value='↑'>
+<table id='work'>
+<tr>
+
+<td id='tweetBoxs'>
+<input type='button' value='↑' id='upButton' class='moveButton'>
 <?php
 	require_once 'PutTimeLine.php';
 	$d = new PutTimeLine();
 	///$d->getTimelineJson("udonTest");
 	$d->testTimeLineView("ok");
 ?>
-<input type='button' value='↓'>
-</div>
+<input type='button' value='↓' id='downButton' class='moveButton' disabled>
+</td>
 
-<div id='map'><noscript>javascriptが使えるブラウザで見てね！</noscript></div>
-
+<td id='map'><noscript>javascriptが使えるブラウザで見てね！</noscript></td>
+</tr></table>
 </body>
 </html>

@@ -9,7 +9,7 @@ class PutTimeLine
 	 */
 	public function testTimeLineView($user) {
 		$c = 1;
-		$this->putline("test", "test".$c++, "http://k.yimg.jp/images/mht/2012/0725_london_soc.png", 135, 34);
+		$this->putline("test", "うわっ...私のかつおぶし、少なすぎ...？", "http://idea.anikipedia.com/image/upim/1319021260.jpg", 135, 34);
 		$this->putline("test", "test".$c++, "http://k.yimg.jp/images/mht/2012/0725_london_soc.png", 135, 35);
 		$this->putline("test", "test".$c++, "http://k.yimg.jp/images/mht/2012/0725_london_soc.png", 135, 36);
 		$this->putline("test", "test".$c++, "http://k.yimg.jp/images/mht/2012/0725_london_soc.png", 135, 37);
@@ -75,10 +75,13 @@ class PutTimeLine
 	 * @param float $posy
 	 */
 	function putline($user, $text, $picurl, $posx, $posy) {
-		// style='display:none' あとで追加
-		echo "<div class='twitBox' id='t".$this->count."' >".
-			"<img src=".$picurl." alt='画像の投稿はありません' class='twitImg'>".
-			$user.":".$text.
-			"経度:".$posx."緯度:".$posy."</div>";
+		//  あとで追加
+		echo "<div class='twitBox' id='".$this->count."' style='display:none'>";
+		echo "<img src=".$picurl." alt='画像の投稿はありません' class='twitImg'>";
+		echo "<table class='dataTable'><tr><th>名前</td><td>".$user."</td>";
+		echo "<td rowspan=3 class='twitText'>".$text."</td></tr>";
+		echo "<tr><th>経度</td><td name='x'>".$posx."</td></tr>";
+		echo "<tr><th>緯度</td><td name='y'>".$posy."</td></tr>";
+		echo "</table></div>";
 	}
 }
