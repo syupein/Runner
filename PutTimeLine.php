@@ -2,6 +2,11 @@
 
 class PutTimeLine
 {
+	public $ver = 1; // testVerCode
+	/**
+	 * 現在の要素数, 配列を作るときなど、idを出力するときなど
+	 * @var int
+	 */
 	private $count = 0;
 	/**
 	 * レイアウトの調整を行うための一覧表示
@@ -14,6 +19,7 @@ class PutTimeLine
 		$this->putline("test", "test".$c++, "http://k.yimg.jp/images/mht/2012/0725_london_soc.png", 135, 36);
 		$this->putline("test", "test".$c++, "http://k.yimg.jp/images/mht/2012/0725_london_soc.png", 135, 37);
 		$this->putline("test", "test".$c++, "http://k.yimg.jp/images/mht/2012/0725_london_soc.png", 136, 37);
+		$this->putline("test", "にゃっにゃんだと！", "http://idea.anikipedia.com/image/upim/1319021260.jpg", 137, 37);
 	}
 	/**
 	 * json形式で出力を行う。
@@ -43,7 +49,6 @@ class PutTimeLine
 			if (isset($e['media'][0]['media_url'])) {
 				// twitterの中にあるデフォルトの画像取得
 				$media = $e['media'][0]['media_url'];
-				echo "test????";
 			}
 			if (isset($e['urls'][0]['display_url'])) {
 				// twipic 画像のフルサイズを取得するものを使用しているが、
@@ -75,13 +80,23 @@ class PutTimeLine
 	 * @param float $posy
 	 */
 	function putline($user, $text, $picurl, $posx, $posy) {
-		//  あとで追加
-		echo "<div class='twitBox' id='".$this->count."' style='display:none'>";
-		echo "<img src=".$picurl." alt='画像の投稿はありません' class='twitImg'>";
-		echo "<table class='dataTable'><tr><th>名前</td><td>".$user."</td>";
-		echo "<td rowspan=3 class='twitText'>".$text."</td></tr>";
-		echo "<tr><th>経度</td><td name='x'>".$posx."</td></tr>";
-		echo "<tr><th>緯度</td><td name='y'>".$posy."</td></tr>";
-		echo "</table></div>";
+		if ($this->ver == 1) {
+			echo "<div class='twitBox' id='".$this->count."' style='display:none'>";
+			echo "<img src=".$picurl." alt='画像の投稿はありません' class='twitImg'>";
+			echo "<table class='dataTable'><tr><th>名前</td><td>".$user."</td>";
+			echo "<td rowspan=3 class='twitText'>".$text."</td></tr>";
+			echo "<tr><th>経度</td><td id='x".$this->count."'>".$posx."</td></tr>";
+			echo "<tr><th>緯度</td><td id='y".$this->count."'>".$posy."</td></tr>";
+			echo "</table></div>";
+		} else if ($this->ver == 2) {
+			echo "<div name='twitBox' class='twitBox' id='".$this->count."'>";
+			echo "<img src=".$picurl." alt='画像の投稿はありません' class='twitImg'>";
+			echo "<table class='dataTable'><tr><th>名前</td><td>".$user."</td>";
+			echo "<td rowspan=3 class='twitText'>".$text."</td></tr>";
+			echo "<tr><th>経度</td><td id='x".$this->count."'>".$posx."</td></tr>";
+			echo "<tr><th>緯度</td><td id='y".$this->count."'>".$posy."</td></tr>";
+			echo "</table></div>";
+		}
+		$this->count++;
 	}
 }

@@ -18,14 +18,13 @@ th,td {
 #tweetBoxs {
 	float: left;
 	height: 100%;
+	weight: 50%;
 }
 #map {
 	height: 100%;
-	width: 100%;
-}
-.moveButton {
-	width: 100%;
-	font-size: 25pt;
+	weight: 50%;
+	position: fixed !important;
+	position: absolute;
 }
 .dataTable {
 	background-color: #00FFFF;
@@ -54,7 +53,12 @@ function mapInit() {
 		mapTypeId: google.maps.MapTypeId.ROADMAP,
 		center: new google.maps.LatLng(39, 138)
 	};
-	map = new google.maps.Map(document.getElementById("map"), opts);
+	m = document.getElementById("map");
+	map = new google.maps.Map(m, opts);
+	m.style.height = (window.innerHeight) + "px";
+	m.style.width  = (window.innerWidth / 2) + "px";
+	document.getElementById("tweetBoxs").style.padding =
+		"0 0 0 "+(window.innerWidth / 2)+"px";
 }
 /**
  * マップのマーカーの生成
@@ -90,86 +94,35 @@ function setLine() {
     var polyline = new google.maps.Polyline(polylineOpts);
 }
 /**
- * 次の画像を選択した時など、
- * 現在のマーカーが変わった時に使用
- */
-function setChangeNowMarker(index) {
-	mArray[nowMarker][0].setIcon(iconBack);
-	mArray[index][0].setIcon(iconNow);
-	nowMarker = index;
-}
-/**
- * 次へボタンを押した時の処理
- */
-function nextButton() {
-	var id = nowMarker + 1;
-	if (document.getElementById(id) === null) {
-		return;
-	} else if(mArray[id] === undefined) {
-		// 要素ありで配列にはみ出ていない。
-		createMarker(id);
-	} else {}
-
-	d = document.getElementById(nowMarker);
-	d.setAttribute("style","display:none");
-	d = document.getElementById(id);
-	d.setAttribute("style","display:box");
-	setChangeNowMarker(id);
-	setLine();
-	document.getElementById('downButton').disabled = false;
-}
-/**
- * 戻るボタンを押した時の処理
- */
-function backButton() {
-	if (nowMarker == 0) {
-		return;
-	}
-	var id = nowMarker - 1;
-	d = document.getElementById(nowMarker);
-	d.setAttribute("style","display:none");
-	d = document.getElementById(id);
-	d.setAttribute("style","display:box");
-	setChangeNowMarker(id);
-	if (id == 0) {
-		document.getElementById('downButton').disabled = true;
-	}
-}
-/**
  * 初期設定、主にテストの犠牲になる。
  */
 function init() {
 	mapInit();
-	createMarker(0);
-	mArray[0][0].setIcon(iconNow);
+	var c = 0;
+	while (c < document.getElementsByName('twitBox').length) {
+		createMarker(c++);
+	}
 	setLine();
-	d = document.getElementById('0');
-	d.setAttribute("style","display:box");
 }
 
 </script>
 
 </head>
 
-
-
 <body onload='init()'>
-
-<table id='work'>
-<tr>
-
-<td id='tweetBoxs'>
-<input type='button' value='↑' id='upButton' class='moveButton' onclick='nextButton()'>
+<div id='tweetBoxs'>
 <?php
 	require_once 'PutTimeLine.php';
 	$d = new PutTimeLine();
-	///$d->getTimelineJson("udonTest");
+	$d->ver = 2;
+	//$d->getTimelineJson("udonTest");
 	$d->testTimeLineView("ok");
 ?>
-<input type='button' value='↓' id='downButton' class='moveButton' onclick='backButton()' disabled>
-</td>
+</div>
 
-<td id='map'><noscript>javascriptが使えるブラウザで見てね！</noscript></td>
-</tr></table>
+<div id='map'>
+<noscript>javascriptが使えるブラウザで見てね！</noscript>
+</div>
+
 </body>
 </html>
