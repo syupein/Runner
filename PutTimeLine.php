@@ -2,24 +2,57 @@
 
 class PutTimeLine
 {
-	public $ver = 1; // testVerCode
+	public $ver = 2; // testVerCode
 	/**
 	 * 現在の要素数, 配列を作るときなど、idを出力するときなど
 	 * @var int
 	 */
 	private $count = 0;
 	/**
+	 * 現在の出力した回数。
+	 * @var int
+	 */
+	private $since = "0";
+
+	/**
+	 * スタート位置のtweetIDを設定する
+	 * @param int $id
+	 */
+	public function setStart($id) {
+		$this->since = $id;
+	}
+	/**
+	 * 今まで表示した回数の設定
+	 * @param int $count
+	 */
+	public function setCount($count) {
+		$this->count = $count;
+	}
+	/**
 	 * レイアウトの調整を行うための一覧表示
 	 * @see
 	 */
 	public function testTimeLineView($user) {
 		$c = 1;
-		$this->putline("test", "うわっ...私のかつおぶし、少なすぎ...？", "http://idea.anikipedia.com/image/upim/1319021260.jpg", 135, 34);
-		$this->putline("test", "test".$c++, "http://k.yimg.jp/images/mht/2012/0725_london_soc.png", 135, 35);
-		$this->putline("test", "test".$c++, "http://k.yimg.jp/images/mht/2012/0725_london_soc.png", 135, 36);
-		$this->putline("test", "test".$c++, "http://k.yimg.jp/images/mht/2012/0725_london_soc.png", 135, 37);
-		$this->putline("test", "test".$c++, "http://k.yimg.jp/images/mht/2012/0725_london_soc.png", 136, 37);
-		$this->putline("test", "にゃっにゃんだと！", "http://idea.anikipedia.com/image/upim/1319021260.jpg", 137, 37);
+		$this->putline("test", "うわっ...私のかつおぶし、少なすぎ...？", "http://idea.anikipedia.com/image/upim/1319021260.jpg", 135, 34, 190);
+		$this->putline("test", "test".$c++, "http://k.yimg.jp/images/mht/2012/0725_london_soc.png", 135, 35, 30);
+		$this->putline("test", "test".$c++, "http://k.yimg.jp/images/mht/2012/0725_london_soc.png", 135, 36, 24);
+		$this->putline("test", "test".$c++, "http://k.yimg.jp/images/mht/2012/0725_london_soc.png", 135, 37, 21);
+		$this->putline("test", "test".$c++, "http://k.yimg.jp/images/mht/2012/0725_london_soc.png", 136, 37, 20);
+		$this->putline("test", "にゃっにゃんだと！", "http://idea.anikipedia.com/image/upim/1319021260.jpg", 137, 37, 10);
+	}
+	/**
+	 * レイアウトの調整を行うための追加処理
+	 * @see
+	 */
+	public function testAddRealTime() {
+		$c = 1;
+		$this->putline("test",
+				"ペロッ…これは青酸カリ！！！",
+				"http://idea.anikipedia.com/image/upim/1319021260.jpg",
+				135+$this->count,
+				34+$this->count,
+				$this->count+1);
 	}
 	/**
 	 * json形式で出力を行う。
@@ -62,14 +95,20 @@ class PutTimeLine
 			// -------------------------------------------
 			// 表示
 			// -------------------------------------------
-			$this->putline($data['from_user'],
+			$id = $data['id_str'];
+			// idが大きいので文字列での数値比較
+			if ( strlen($id) > strlen($this->since) ||
+					(strcmp($id , $this->since) > 0 &&
+							strlen($id) == strlen($this->since)) ) {
+				$this->putline($data['from_user'],
 					$data['text'],
 					$media,
 					$data['geo']["coordinates"][1],
-					$data['geo']["coordinates"][0]);
+					$data['geo']["coordinates"][0],
+					$id);
+			}
 		}
 	}
-
 
 	/**
 	 * つぶやき一件におけるデータの処理
@@ -79,24 +118,46 @@ class PutTimeLine
 	 * @param float $posx
 	 * @param float $posy
 	 */
-	function putline($user, $text, $picurl, $posx, $posy) {
+	function putline($user, $text, $picurl, $posx, $posy, $id) {
+		$p = $this->getPosName($posx, $posy);
 		if ($this->ver == 1) {
 			echo "<div class='twitBox' id='".$this->count."' style='display:none'>";
 			echo "<img src=".$picurl." alt='画像の投稿はありません' class='twitImg'>";
 			echo "<table class='dataTable'><tr><th>名前</td><td>".$user."</td>";
-			echo "<td rowspan=3 class='twitText'>".$text."</td></tr>";
-			echo "<tr><th>経度</td><td id='x".$this->count."'>".$posx."</td></tr>";
-			echo "<tr><th>緯度</td><td id='y".$this->count."'>".$posy."</td></tr>";
+			echo "<td rowspan=2 class='twitText'>".$text."</td></tr>";
+			echo "<tr><td colspan=2>".$p."</td></tr>";
+			echo "<input type='hidden' id='x".$this->count."' value='".$posx."'>";
+			echo "<input type='hidden' id='y".$this->count."' value='".$posy."'>";
+			echo "<input type='hidden' id='h".$this->count."' value='".$id."'>";
 			echo "</table></div>";
 		} else if ($this->ver == 2) {
 			echo "<div name='twitBox' class='twitBox' id='".$this->count."'>";
 			echo "<img src=".$picurl." alt='画像の投稿はありません' class='twitImg'>";
 			echo "<table class='dataTable'><tr><th>名前</td><td>".$user."</td>";
-			echo "<td rowspan=3 class='twitText'>".$text."</td></tr>";
-			echo "<tr><th>経度</td><td id='x".$this->count."'>".$posx."</td></tr>";
-			echo "<tr><th>緯度</td><td id='y".$this->count."'>".$posy."</td></tr>";
+			echo "<td rowspan=2 class='twitText'>".$text."</td></tr>";
+			echo "<tr><td colspan=2>".$p."</td></tr>";
+			echo "<input type='hidden' id='x".$this->count."' value='".$posx."'>";
+			echo "<input type='hidden' id='y".$this->count."' value='".$posy."'>";
+			echo "<input type='hidden' id='h".$this->count."' value='".$id."'>";
 			echo "</table></div>";
 		}
 		$this->count++;
+	}
+
+	/**
+	 * 緯度と経度を指定し、一番近い町名まで取得する。
+	 * @param int $x
+	 * @param int $y
+	 */
+	function getPosName($x, $y) {
+		$api_url="http://geoapi.heartrails.com/api/json?method=searchByGeoLocation&x=".$x."&y=".$y;
+		$resdata=file_get_contents($api_url);
+		$data=json_decode($resdata,true);
+		$res = "街データ取得失敗";
+		if ( isset($data["response"]["location"][0]) ) {
+			$d = $data["response"]["location"][0];
+			$res = $d['prefecture'].$d['city'].$d['town'];
+		}
+		return $res;
 	}
 }
