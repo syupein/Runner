@@ -24,7 +24,7 @@
  * mw : マップの最小横幅 : 400px?
  */
   -->
-<body onload="init('<?php echo USER ?>',135, 25, 5, 180000, 800, 600, 400)">
+<body onload="init('<?php echo USER ?>',135, 25, 5, 1800, 800, 600, 400)">
 <div id='tweetHead'>
 <!-- なにか上に表示したいものがあれば -->
 <div id='tweetBoxs'>
