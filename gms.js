@@ -106,20 +106,30 @@ function mapResize() {
  * マップのマーカーの生成
  */
 function createMarker() {
-	var x = document.getElementById("x"+mCount).value;
-	var y = document.getElementById("y"+mCount).value;
+	var mid = mCount++;
+	var x = document.getElementById("x"+mid).value;
+	var y = document.getElementById("y"+mid).value;
 	var marker = new google.maps.Marker({
 		  position: new google.maps.LatLng(y, x),
 		  map: map,
 		  icon: iconNow
 		});
-	mArray[mCount++] = new Array(
+	mArray[mid] = new Array(
 			new google.maps.Marker(marker),
 			x,y);
 	// アイコンを戻す。
-	mArray[(mCount-2 > 0 ? mCount-2 : 0)][0].setIcon(iconBack);
+	mArray[(mid-1 > 0 ? mid-1 : 0)][0].setIcon(iconBack);
 	// アイコンの位置に地図の座標を合わせる。
 	map.panTo(new google.maps.LatLng(y,x));
+	// 吹き出し
+	var infowin = new google.maps.InfoWindow({content:document.getElementById("t"+mid).innerHTML});
+	google.maps.event.addListener(mArray[mid][0], 'mouseover', function(){
+		infowin.open(map, marker);
+	});
+	// mouseoutイベントを取得するListenerを追加
+	google.maps.event.addListener(mArray[mid][0], 'mouseout', function(){
+		infowin.close();
+	});
 }
 /**
  * マップのライン生成
@@ -195,9 +205,12 @@ function requestFile()
 	var tid = "-1";
 	var i;
 	for (i = 0; i < mCount; i++) {
-		var w = document.getElementById("h"+i).value;
-		if (w.length > tid.length || (w > tid && w.length === tid.length)) {
-			tid = w;
+		var w = document.getElementById("h"+i);
+		if (w !== null) {
+			w = w.value;
+			if (w.length > tid.length || (w > tid && w.length === tid.length)) {
+				tid = w;
+			}
 		}
 	}
 	var fileName = "adapter.php?st="+ tid +"&count="+ mCount +"&user="+user;

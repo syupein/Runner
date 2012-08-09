@@ -72,12 +72,12 @@ class PutTimeLine
 				"?q=from:".$user."&rpp=100&include_entities=true";
 		$resdata=file_get_contents($api_url);
 		$twitterdata=json_decode($resdata,true);
-
+		$count = 0;
 		foreach ($twitterdata["results"] as $data) {
 			// -------------------------------------------
 			// 画像取得
 			// -------------------------------------------
-			$media = "存在しないとき用の画像";
+			$media = "なし";
 			$e = $data['entities'];
 			if (isset($e['media'][0]['media_url'])) {
 				// twitterの中にあるデフォルトの画像取得
@@ -96,17 +96,29 @@ class PutTimeLine
 			// 表示
 			// -------------------------------------------
 			$id = $data['id_str'];
+
+			if (isset($data['geo']["coordinates"][1]) && isset($data['geo']["coordinates"][0])) {
+				$x = $data['geo']["coordinates"][1];
+				$y = $data['geo']["coordinates"][0];
+			} else {
+				$x = 0;$y = 0;
+			}
+
 			// idが大きいので文字列での数値比較
 			if ( strlen($id) > strlen($this->since) ||
 					(strcmp($id , $this->since) > 0 &&
 							strlen($id) == strlen($this->since)) ) {
+				$count++;
 				$this->putline($data['from_user'],
 					$data['text'],
 					$media,
-					$data['geo']["coordinates"][1],
-					$data['geo']["coordinates"][0],
+					$x,
+					$y,
 					$id);
 			}
+		}
+		if ($count == 0){
+			echo '<!-- 出力なし -->';
 		}
 	}
 
@@ -122,9 +134,12 @@ class PutTimeLine
 		$p = $this->getPosName($posx, $posy);
 		if ($this->ver == 1) {
 			echo "<div class='twitBox' id='".$this->count."' style='display:none'>";
-			echo "<img src=".$picurl." alt='画像の投稿はありません' class='twitImg'>";
+			if ($picurl !== 'なし') {
+				echo "<img src='".$picurl."' alt='画像の投稿はありません' class='twitImg'>";
+			}
+
 			echo "<table class='dataTable'><tr><th>名前</td><td>".$user."</td>";
-			echo "<td rowspan=2 class='twitText'>".$text."</td></tr>";
+			echo "<td rowspan=2 class='twitText' id='t".$this->count."'>".$text."</td></tr>";
 			echo "<tr><td colspan=2>".$p."</td></tr>";
 			echo "<input type='hidden' id='x".$this->count."' value='".$posx."'>";
 			echo "<input type='hidden' id='y".$this->count."' value='".$posy."'>";
@@ -132,9 +147,13 @@ class PutTimeLine
 			echo "</table></div>";
 		} else if ($this->ver == 2) {
 			echo "<div name='twitBox' class='twitBox' id='".$this->count."'>";
-			echo "<img src=".$picurl." alt='画像の投稿はありません' class='twitImg'>";
+
+			if ($picurl !== 'なし') {
+				echo "<img src='".$picurl."' alt='画像の投稿はありません' class='twitImg'>";
+			}
+
 			echo "<table class='dataTable'><tr><th>名前</td><td>".$user."</td>";
-			echo "<td rowspan=2 class='twitText'>".$text."</td></tr>";
+			echo "<td rowspan=2 class='twitText' id='t".$this->count."'>".$text."</td></tr>";
 			echo "<tr><td colspan=2>".$p."</td></tr>";
 			echo "<input type='hidden' id='x".$this->count."' value='".$posx."'>";
 			echo "<input type='hidden' id='y".$this->count."' value='".$posy."'>";
