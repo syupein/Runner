@@ -1,0 +1,53 @@
+.container{
+    margin-top:30px;
+}
+
+#heroReload{
+    text-align:right;
+}
+
+.streamTitle{
+    font-size:30px;
+}
+
+#streamArea{
+    background: -webkit-gradient(linear, left top, left bottom, color-stop(0.00, #f6f7f7), color-stop(0.51, #b7b9c5), color-stop(1.00, #f6f7f7));
+    background: -webkit-linear-gradient(top, #f6f7f7 0%, #b7b9c5 51%, #f6f7f7 100%);
+    background: -moz-linear-gradient(top, #f6f7f7 0%, #b7b9c5 51%, #f6f7f7 100%);
+    background: -o-linear-gradient(top, #f6f7f7 0%, #b7b9c5 51%, #f6f7f7 100%);
+    background: -ms-linear-gradient(top, #f6f7f7 0%, #b7b9c5 51%, #f6f7f7 100%);
+    background: linear-gradient(to bottom, #f6f7f7 0%, #b7b9c5 51%, #f6f7f7 100%);
+}
+
+.streamUnit{
+    margin-top: 30px;
+    }
+
+#mapArea{
+    margin-right:10px;
+}
+
+#streamArea{
+    height: 620px;
+    overflow: scroll;
+}
+
+#titleArea{
+    height:100px;
+    overflow: hidden;
+    background-image: url('/img/broadcast.jpg');
+    background-repeat: no-repeat;
+    background-position: 0% 39%;
+    background-size: 16%;
+}
+
+#titleright{
+    position: relative;
+    top: -35px;
+    text-align: right;
+}
+#titleleft{
+    padding-left: 80px;
+    padding-top: 25px;
+}
+

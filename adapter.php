@@ -7,6 +7,10 @@ if (isset($_GET['st']) && isset($_GET['count']) && isset($_GET['user']) ) {
 	$d->setCount(htmlspecialchars($_GET['count'], ENT_QUOTES));
 	$d->getTimelineJson(htmlspecialchars($_GET['user'], ENT_QUOTES));
 	//$d->testAddRealTime();
+} else if (isset($_GET['st']) && isset($_GET['count']) && isset($_GET['userid'])) {
+	$d->setStart($_GET['st']);
+	$d->setCount($_GET['count']);
+	$d->getStream($_GET['userid']);
 } else {
 	$d->testAddRealTime();
 }

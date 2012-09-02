@@ -1,12 +1,8 @@
 // ---------------------------------- 設定項目 -------------------------------------------
-var user;
+var userid;
 var goalX;
 var goalY;
 var zoomD;
-var intervalTime;
-var pWidth;
-var pHeight;
-var mWidth;
 // ---------------------------------------------------------------------------------------
 
 
@@ -23,27 +19,18 @@ var timer = false;
 
 /**
  * 初期設定、主にテストの犠牲になる。
- * u  : ユーザ名         : 決めてない
+ * u  : ユーザID         : 決めてない
  * gx : ゴールのX座標    : 決めてない
  * gy : ゴールのY座標    : 決めてない
- * zd : 初期ズーム量     : 5
- * it : 更新時刻         : 180000(3分)
- * pw : 画像の横幅       : 800px?
- * ph : 画像の縦幅       : 600px?
- * mw : マップの最小横幅 : 400px?
+ * zd : 初期ズーム量     : 14
  */
-function init(u, gx, gy, zd, it, pw, ph, mw) {
-	user = u;
+function init(u, gx, gy, zd) {
+	userid = u;
 	goalX = gx;
 	goalY = gy;
 	zoomD = zd;
-	intervalTime = it;
-	pWidth = pw;
-	pHeight = ph;
-	mWidth = mw;
 	mapInit();
 	mapUpdate();
-	mapResize();
 	requestFile();
 }
 
@@ -56,8 +43,7 @@ function mapInit() {
 		mapTypeId: google.maps.MapTypeId.ROADMAP,
 		center: new google.maps.LatLng(goalY, goalX)
 	};
-	m = document.getElementById("map");
-	map = new google.maps.Map(m, opts);
+	map = new google.maps.Map(document.getElementById("map_canvas"), opts);
 	// ゴールの位置設定
 	var marker = new google.maps.Marker({
 		  position: new google.maps.LatLng(goalY, goalX),
@@ -66,42 +52,7 @@ function mapInit() {
 		});
 	goalMarker = new google.maps.Marker(marker);
 }
-/**
- * 画面の変更のたびにgooglemapの大きさを変更
- */
-window.onresize = function () {mapResize();}
-function mapResize() {
-	var m = document.getElementById("map");
-	var pw = pWidth;
-	var ph = pHeight;
-	var xch = 20;
-	var c = 1;
-	// 画像サイズの調整
-	while (window.innerWidth - pw < mWidth){
-		c++;
-		pw = pWidth / c;
-		ph = pHeight / c;
-	}
-	// マップサイズの変更
-	m.style.height = (window.innerHeight-10) + "px";
-	m.style.width  = (window.innerWidth - pw - xch) + "px";
-	document.getElementById("tweetHead").style.padding
-		 = "0 0 0 "+(window.innerWidth - pw-xch)+"px";
-	// 画像サイズの変更
-	var css_list = document.styleSheets;
-	if (css_list) for (var i = 0; i < css_list.length; i++) {
-		var rule_list = (css_list[i].cssRules) ? css_list[i].cssRules : css_list[i].rules;
 
-		for (var ii = 0; ii < rule_list.length; ii++)
-		 if (rule_list[ii].selectorText === '.twitImg')
-		 with (rule_list[ii].style) {
-			width = (pw - xch) + "px";
-			height = ph + "px";
-		}
-
-	}
-
-}
 /**
  * マップのマーカーの生成
  */
@@ -117,10 +68,7 @@ function createMarker() {
 	mArray[mid] = new Array(
 			new google.maps.Marker(marker),
 			x,y);
-	// アイコンを戻す。
-	mArray[(mid-1 > 0 ? mid-1 : 0)][0].setIcon(iconBack);
-	// アイコンの位置に地図の座標を合わせる。
-	map.panTo(new google.maps.LatLng(y,x));
+
 	// 吹き出し
 	var infowin = new google.maps.InfoWindow({content:document.getElementById("t"+mid).innerHTML});
 	google.maps.event.addListener(mArray[mid][0], 'mouseover', function(){
@@ -136,27 +84,43 @@ function createMarker() {
  * マーカーの配列があるもの全てにラインを引く
  */
 function setLine() {
-    var path = new Array(mArray.length);
-    for (var i = 0; i < mArray.length; i++) {
+	var path = new Array(mArray.length);
+	for (var i = 0; i < mArray.length; i++) {
 		path[i] = new google.maps.LatLng(mArray[i][2], mArray[i][1]);
-    }
-    // Polylineの初期設定
-    var polylineOpts = {
-      map: map,
-      path: path
-    };
-    // 直前で作成したPolylineOptionsを利用してPolylineを作成
-    // APIで色変えとか出来るなら外に出す。
-    var polyline = new google.maps.Polyline(polylineOpts);
+	}
+	// Polylineの初期設定
+	var polylineOpts = {
+		map: map,
+		path: path,
+		strokeColor: '#FF0000',
+		strokeOpacity: 1.0,
+		strokeWeight: 2
+	};
+	// 直前で作成したPolylineOptionsを利用してPolylineを作成
+	// APIで色変えとか出来るなら外に出す。
+	var polyline = new google.maps.Polyline(polylineOpts);
 }
 /**
  * マップの更新
  */
 function mapUpdate() {
+	var d;
+	var i;
 	while (mCount < document.getElementsByName('twitBox').length) {
 		createMarker();// mCountの更新が中で行われる。
 	}
 	setLine();
+	d = getBigIdx();
+	for (i = 0; i < mCount; i++) {
+		if (i == d) {
+			mArray[i][0].setIcon(iconNow);
+			map.panTo(new google.maps.LatLng(
+					document.getElementById("y"+i).value,
+					document.getElementById("x"+i).value));
+		} else {
+			mArray[i][0].setIcon(iconBack);
+		}
+	}
 }
 
 // 元sample
@@ -191,43 +155,74 @@ function createHttpRequest(){
  */
 function requestFile()
 {
-	if (timer == false) {
-		setTimeout(function() {
-			timer = true;
-			requestFile();
-			timer = false;
-			requestFile();
-		} , intervalTime);
-		return;
-	}
 	//XMLHttpRequestオブジェクト生成
-	var httpoj = createHttpRequest();
-	var tid = "-1";
+	var httpobj = createHttpRequest();
+	var tid;
+	var res;
+	var keep;
+	var w;
+	tid = getBigIdx();
+	if (tid != -1) {
+		tid = document.getElementById("h"+tid).value;
+	}
+	var fileName = "adapter.php?st="+ tid +"&count="+ mCount +"&userid="+userid;
+	//open メソッド
+	httpobj.open( 'GET' , fileName , true );
+	keep = "";
+
+	//受信時に起動するイベント
+	httpobj.onreadystatechange = function() {
+		if(httpobj.readyState == 2){
+			// connect完了
+		}else if(httpobj.readyState == 3){
+			// レスポンスを取得
+			// ずっと同じ文章を保持するため、表示したデータを保存して切り捨てに利用
+			w = httpobj.responseText;
+			res = w.substring(keep.length);
+			keep = w;
+			// 追加処理
+			$(res).prependTo('#streamArea').hide().fadeIn('slow');
+			mapUpdate();
+		}else if(httpobj.readyState == 4){
+			$('#streamArea').prepend('接続が切れました。リロードしてください。').css('color', 'red');
+		}
+	}
+	//send メソッド
+	httpobj.send( null );
+}
+/**
+ * ツイートIDが一番大きいデータを持つ添字を返す
+ */
+function getBigIdx() {
 	var i;
+	var tid = "-1";
+	var idx = -1;
 	for (i = 0; i < mCount; i++) {
 		var w = document.getElementById("h"+i);
 		if (w !== null) {
 			w = w.value;
-			if (w.length > tid.length || (w > tid && w.length === tid.length)) {
+			if (tid == -1) {
 				tid = w;
+				idx = i;
+			} else if (checkStrNumber(w, tid) == 1) {
+				tid = w;
+				idx = i;
 			}
 		}
 	}
-	var fileName = "adapter.php?st="+ tid +"&count="+ mCount +"&user="+user;
-	//open メソッド
-	httpoj.open( 'GET' , fileName , true );
-
-	//受信時に起動するイベント
-	httpoj.onreadystatechange = function() {
-		//readyState値は4で受信完了
-		if (httpoj.readyState==4) {
-			//レスポンスを取得
-			res  = httpoj.responseText;
-			// ★ 追加処理 ★
-			$(res).prependTo('#tweetBoxs').hide().fadeIn('slow');
-			mapUpdate();
-		}
+	return idx;
+}
+/**
+ * 数値にあたる文字列を比較する
+ * 第一引数が大きいと1
+ * 第二引数が大きいと-1
+ * 等しいと0
+ */
+function checkStrNumber(l, r) {
+	if (l == r) return 0;
+	if (l.length > l.length || (l > r && l.length === r.length)) {
+		return 1;
+	} else {
+		return -1;
 	}
-	//send メソッド
-	httpoj.send( null );
 }

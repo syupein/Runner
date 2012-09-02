@@ -2,7 +2,6 @@
 
 class PutTimeLine
 {
-	public $ver = 2; // testVerCode
 	/**
 	 * 現在の要素数, 配列を作るときなど、idを出力するときなど
 	 * @var int
@@ -29,6 +28,7 @@ class PutTimeLine
 		$this->count = $count;
 	}
 	/**
+	 * !消去対象!
 	 * レイアウトの調整を行うための一覧表示
 	 * @see
 	 */
@@ -42,6 +42,7 @@ class PutTimeLine
 		$this->putline("test", "にゃっにゃんだと！", "http://idea.anikipedia.com/image/upim/1319021260.jpg", 137, 37, 10);
 	}
 	/**
+	 * !消去対象!
 	 * レイアウトの調整を行うための追加処理
 	 * @see
 	 */
@@ -54,6 +55,36 @@ class PutTimeLine
 				34+$this->count,
 				$this->count+1);
 	}
+	/**
+	 * ストリームを表示する。
+	 * @param int $userid
+	 */
+	public function getStream($userid) {
+		set_time_limit(0);
+		$user = 'udonTest';
+		$password = 'testesudon831';
+		$keyword = 'test';
+
+		// 動的表示サンプル ob_endなどの理由
+		// http://www.enbridge.jp/blog/2007/08/17232951.php
+
+		// バッファを事前に処理
+		echo str_pad(" ", 4096);
+		ob_end_flush();
+		ob_start('mb_output_handler');
+
+		//$stream = fopen("http://{$user}:{$password}@stream.twitter.com/spritzer.json", "r");
+		$stream = fopen("https://{$user}:{$password}@stream.twitter.com/1/statuses/filter.json?follow={$userid}&include_entities=true", "r");
+		//$stream = fopen("https://{$user}:{$password}@stream.twitter.com/1/statuses/filter.json?track={$keyword}", "r");
+		while ($json = fgets($stream )) {
+			$line = json_decode($json,true);
+			$this->setData($line);
+			ob_flush();
+			flush();
+			sleep(1);
+		}
+	}
+
 	/**
 	 * json形式で出力を行う。
 	 * つぶやき一件のデータ処理はputline関数で行う。
@@ -72,98 +103,95 @@ class PutTimeLine
 				"?q=from:".$user."&rpp=100&include_entities=true";
 		$resdata=file_get_contents($api_url);
 		$twitterdata=json_decode($resdata,true);
-		$count = 0;
+		$c = 0;
 		foreach ($twitterdata["results"] as $data) {
-			// -------------------------------------------
-			// 画像取得
-			// -------------------------------------------
-			$media = "なし";
-			$e = $data['entities'];
-			if (isset($e['media'][0]['media_url'])) {
-				// twitterの中にあるデフォルトの画像取得
-				$media = $e['media'][0]['media_url'];
+			if ($this->setData($data)) {
+				$c++;
 			}
-			if (isset($e['urls'][0]['display_url'])) {
-				// twipic 画像のフルサイズを取得するものを使用しているが、
-				// 存在しないAPIなので使用はあまりしないこと。
-				$w = $e['urls'][0]['display_url'];
-				if (strpos($w,"twitpic.com/") == 0) {
-					$media  = "http://twitpic.com/show/full/";
-					$media .= substr($w, strlen("twitpic.com/"));
-				}
+		}
+		if ($c == 0){
+			echo '<!-- 出力なし -->';
+		}
+	}
+	/**
+	 * １行を処理する
+	 * @return bool 出力したかどうか
+	 * @param  $line 一行
+	 */
+	public function setData($data) {
+		// -------------------------------------------
+		// 画像取得
+		// -------------------------------------------
+		$media = "なし";
+		if (!isset($data['entities'])) {
+			return false;
+		}
+		$e = $data['entities'];
+		if (isset($e['media'][0]['media_url'])) {
+			// twitterの中にあるデフォルトの画像取得
+			$media = $e['media'][0]['media_url'];
+		}
+		if (isset($e['urls'][0]['display_url'])) {
+			// twipic 画像のフルサイズを取得するものを使用しているが、
+			// 存在しないAPIなので使用はあまりしないこと。
+			$w = $e['urls'][0]['display_url'];
+			if (strpos($w,"twitpic.com/") == 0) {
+				$media  = "http://twitpic.com/show/full/";
+				$media .= substr($w, strlen("twitpic.com/"));
 			}
-			// -------------------------------------------
-			// 表示
-			// -------------------------------------------
-			$id = $data['id_str'];
+		}
+		// -------------------------------------------
+		// 表示
+		// -------------------------------------------
+		$id = $data['id_str'];
 
-			if (isset($data['geo']["coordinates"][1]) && isset($data['geo']["coordinates"][0])) {
-				$x = $data['geo']["coordinates"][1];
-				$y = $data['geo']["coordinates"][0];
-			} else {
-				$x = 0;$y = 0;
-			}
+		if (isset($data['geo']["coordinates"][1]) && isset($data['geo']["coordinates"][0])) {
+			$x = $data['geo']["coordinates"][1];
+			$y = $data['geo']["coordinates"][0];
+		} else {
+			$x = 0;$y = 0;
+		}
 
-			// idが大きいので文字列での数値比較
-			if ( strlen($id) > strlen($this->since) ||
-					(strcmp($id , $this->since) > 0 &&
-							strlen($id) == strlen($this->since)) ) {
-				$count++;
-				$this->putline($data['from_user'],
+		// idが大きいので文字列での数値比較
+		if ( strlen($id) > strlen($this->since) ||
+				(strcmp($id , $this->since) > 0 &&
+						strlen($id) == strlen($this->since)) ) {
+			$this->putline(
 					$data['text'],
 					$media,
 					$x,
 					$y,
 					$id);
-			}
+			return true;
 		}
-		if ($count == 0){
-			echo '<!-- 出力なし -->';
-		}
+		return false;
 	}
 
 	/**
-	 * つぶやき一件におけるデータの処理
+	 * つぶやき一件におけるデータ表示処理
 	 * @param string $user
 	 * @param string $text
 	 * @param string $picurl
 	 * @param float $posx
 	 * @param float $posy
 	 */
-	function putline($user, $text, $picurl, $posx, $posy, $id) {
-		$p = $this->getPosName($posx, $posy);
-		if ($this->ver == 1) {
-			echo "<div class='twitBox' id='".$this->count."' style='display:none'>";
-			if ($picurl !== 'なし') {
-				echo "<img src='".$picurl."' alt='画像の投稿はありません' class='twitImg'>";
-			}
+	function putline($text, $picurl, $posx, $posy, $id) {
+		echo "<div name='twitBox' class='streamUnit' id='".$this->count."'>";
 
-			echo "<table class='dataTable'><tr><th>名前</td><td>".$user."</td>";
-			echo "<td rowspan=2 class='twitText' id='t".$this->count."'>".$text."</td></tr>";
-			echo "<tr><td colspan=2>".$p."</td></tr>";
-			echo "<input type='hidden' id='x".$this->count."' value='".$posx."'>";
-			echo "<input type='hidden' id='y".$this->count."' value='".$posy."'>";
-			echo "<input type='hidden' id='h".$this->count."' value='".$id."'>";
-			echo "</table></div>";
-		} else if ($this->ver == 2) {
-			echo "<div name='twitBox' class='twitBox' id='".$this->count."'>";
-
-			if ($picurl !== 'なし') {
-				echo "<img src='".$picurl."' alt='画像の投稿はありません' class='twitImg'>";
-			}
-
-			echo "<table class='dataTable'><tr><th>名前</td><td>".$user."</td>";
-			echo "<td rowspan=2 class='twitText' id='t".$this->count."'>".$text."</td></tr>";
-			echo "<tr><td colspan=2>".$p."</td></tr>";
-			echo "<input type='hidden' id='x".$this->count."' value='".$posx."'>";
-			echo "<input type='hidden' id='y".$this->count."' value='".$posy."'>";
-			echo "<input type='hidden' id='h".$this->count."' value='".$id."'>";
-			echo "</table></div>";
+		if ($picurl !== 'なし') {
+			echo "<img src='".$picurl."' alt='不明な画像' class='twitImg'>";
 		}
+		echo "<span class='streamTitle' id='t".$this->count."'>".$text."</span>";
+		echo "<input type='hidden' id='x".$this->count."' value='".$posx."'>";
+		echo "<input type='hidden' id='y".$this->count."' value='".$posy."'>";
+		echo "<input type='hidden' id='h".$this->count."' value='".$id."'>";
+		echo "</div>";
+
 		$this->count++;
 	}
 
 	/**
+	 * !消去対象!
 	 * 緯度と経度を指定し、一番近い町名まで取得する。
 	 * @param int $x
 	 * @param int $y
