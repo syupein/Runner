@@ -1,5 +1,6 @@
 .container{
     margin-top:30px;
+    background: -webkit-gradient(linear, left top, left bottom, color-stop(0.00, #a6f7f7), color-stop(0.51, #f7f9f5), color-stop(1.00, #f6f7f7));
 }
 
 #heroReload{
@@ -35,7 +36,7 @@
 #titleArea{
     height:100px;
     overflow: hidden;
-    background-image: url('/img/broadcast.jpg');
+    background-image: url('../img/broadcast.jpg');
     background-repeat: no-repeat;
     background-position: 0% 39%;
     background-size: 16%;

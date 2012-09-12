@@ -22,7 +22,6 @@ if (isset($_POST['id'])) {
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <script src="js/jquery.1.7.2.min.js"></script>
 <script src="js/bootstrap.min.js"></script>
-<script src="js/default.js"></script>
 <link href="css/bootstrap.min.css" rel="stylesheet">
 <link href="css/bootstrap-responsive.min.css" rel="stylesheet">
 <link href="css/default.css" rel="stylesheet">

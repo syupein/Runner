@@ -50,7 +50,7 @@ class PutTimeLine
 		//$stream = fopen("https://{$user}:{$password}@stream.twitter.com/1/statuses/filter.json?track={$keyword}", "r");
 		while ($json = fgets($stream )) {
 			$line = json_decode($json,true);
-			$this->setData($line);
+			echo $this->setData($line);
 			ob_flush();
 			flush();
 			sleep(1);
@@ -75,14 +75,20 @@ class PutTimeLine
 				"?q=from:".$user."&rpp=100&include_entities=true";
 		$resdata=file_get_contents($api_url);
 		$twitterdata=json_decode($resdata,true);
+		$array = $twitterdata["results"];
 		$c = 0;
-		foreach ($twitterdata["results"] as $data) {
-			if ($this->setData($data)) {
+		$str = "";
+		for ($i = count($array)-1; $i >= 0; $i--) {
+			$d = $this->setData($array[$i]);
+			if ($d != null) {
 				$c++;
+				$str = $d.$str;
 			}
 		}
 		if ($c == 0){
 			echo '<!-- 出力なし -->';
+		} else {
+			echo $str;
 		}
 	}
 	/**
@@ -121,22 +127,22 @@ class PutTimeLine
 			$x = $data['geo']["coordinates"][1];
 			$y = $data['geo']["coordinates"][0];
 		} else {
-			return;
+			return null;
 		}
 
 		// idが大きいので文字列での数値比較
 		if ( strlen($id) > strlen($this->since) ||
 				(strcmp($id , $this->since) > 0 &&
 						strlen($id) == strlen($this->since)) ) {
-			$this->putline(
-					$data['text'],
-					$media,
-					$x,
-					$y,
-					$id);
-			return true;
+			return $this->putline(
+						$data['text'],
+						$media,
+						$x,
+						$y,
+						$id
+					);
 		}
-		return false;
+		return null;
 	}
 
 	/**
@@ -148,18 +154,18 @@ class PutTimeLine
 	 * @param float $posy
 	 */
 	function putline($text, $picurl, $posx, $posy, $id) {
-		echo "<div name='twitBox' class='streamUnit' id='".$this->count."'>";
+		$str = "<div name='twitBox' class='streamUnit' id='".$this->count."'>";
 
 		if ($picurl !== 'なし') {
-			echo "<img src='".htmlspecialchars($picurl, ENT_QUOTES)."' alt='不明な画像' class='twitImg'>";
+			$str .= "<img src='".htmlspecialchars($picurl, ENT_QUOTES)."' alt='不明な画像' class='twitImg'>";
 		}
-		echo "<span class='streamTitle' id='t".$this->count."'>".htmlspecialchars($text, ENT_QUOTES)."</span>";
-		echo "<input type='hidden' id='x".$this->count."' value='".$posx."'>";
-		echo "<input type='hidden' id='y".$this->count."' value='".$posy."'>";
-		echo "<input type='hidden' id='h".$this->count."' value='".$id."'>";
-		echo "</div>";
-
+		$str .= "<span class='streamTitle' id='t".$this->count."'>".htmlspecialchars($text, ENT_QUOTES)."</span>";
+		$str .= "<input type='hidden' id='x".$this->count."' value='".$posx."'>";
+		$str .= "<input type='hidden' id='y".$this->count."' value='".$posy."'>";
+		$str .= "<input type='hidden' id='h".$this->count."' value='".$id."'>";
+		$str .= "</div>\n";
 		$this->count++;
+		return $str;
 	}
 
 	/**
