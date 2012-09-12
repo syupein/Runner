@@ -28,34 +28,6 @@ class PutTimeLine
 		$this->count = $count;
 	}
 	/**
-	 * !消去対象!
-	 * レイアウトの調整を行うための一覧表示
-	 * @see
-	 */
-	public function testTimeLineView($user) {
-		$c = 1;
-		$this->putline("test", "うわっ...私のかつおぶし、少なすぎ...？", "http://idea.anikipedia.com/image/upim/1319021260.jpg", 135, 34, 190);
-		$this->putline("test", "test".$c++, "http://k.yimg.jp/images/mht/2012/0725_london_soc.png", 135, 35, 30);
-		$this->putline("test", "test".$c++, "http://k.yimg.jp/images/mht/2012/0725_london_soc.png", 135, 36, 24);
-		$this->putline("test", "test".$c++, "http://k.yimg.jp/images/mht/2012/0725_london_soc.png", 135, 37, 21);
-		$this->putline("test", "test".$c++, "http://k.yimg.jp/images/mht/2012/0725_london_soc.png", 136, 37, 20);
-		$this->putline("test", "にゃっにゃんだと！", "http://idea.anikipedia.com/image/upim/1319021260.jpg", 137, 37, 10);
-	}
-	/**
-	 * !消去対象!
-	 * レイアウトの調整を行うための追加処理
-	 * @see
-	 */
-	public function testAddRealTime() {
-		$c = 1;
-		$this->putline("test",
-				"ペロッ…これは青酸カリ！！！",
-				"http://idea.anikipedia.com/image/upim/1319021260.jpg",
-				135+$this->count,
-				34+$this->count,
-				$this->count+1);
-	}
-	/**
 	 * ストリームを表示する。
 	 * @param int $userid
 	 */
@@ -149,7 +121,7 @@ class PutTimeLine
 			$x = $data['geo']["coordinates"][1];
 			$y = $data['geo']["coordinates"][0];
 		} else {
-			$x = 0;$y = 0;
+			return;
 		}
 
 		// idが大きいので文字列での数値比較
@@ -179,9 +151,9 @@ class PutTimeLine
 		echo "<div name='twitBox' class='streamUnit' id='".$this->count."'>";
 
 		if ($picurl !== 'なし') {
-			echo "<img src='".$picurl."' alt='不明な画像' class='twitImg'>";
+			echo "<img src='".htmlspecialchars($picurl, ENT_QUOTES)."' alt='不明な画像' class='twitImg'>";
 		}
-		echo "<span class='streamTitle' id='t".$this->count."'>".$text."</span>";
+		echo "<span class='streamTitle' id='t".$this->count."'>".htmlspecialchars($text, ENT_QUOTES)."</span>";
 		echo "<input type='hidden' id='x".$this->count."' value='".$posx."'>";
 		echo "<input type='hidden' id='y".$this->count."' value='".$posy."'>";
 		echo "<input type='hidden' id='h".$this->count."' value='".$id."'>";

@@ -49,8 +49,7 @@ if (isset($_POST['id'])) {
 <h1>Live</h1>
 </div>
 <div id="titleright">
-<a href="#" id="heroReloadButton" class="btn btn-primary btn-large">更新</a>
-<a href="#" id="heroOnair" class="btn btn-danger btn-large">LIVE</a>
+<h1>IT マラソン</h1>
 </div>
 </div>
 <div id="mapArea">
@@ -63,7 +62,6 @@ if (isset($_POST['id'])) {
 	$d = new PutTimeLine();
 	/// ★ユーザー名★
 	$d->getTimelineJson($user); // 本番用コード
-	//$d->testTimeLineView("ok"); // テスト用コード
 ?>
 </div>
 </div>
