@@ -36,6 +36,8 @@ class PutTimeLine
 		$user = 'udonTest';
 		$password = 'testesudon831';
 		$keyword = 'test';
+		$userid = $this->getUserId($userid);
+
 
 		// 動的表示サンプル ob_endなどの理由
 		// http://www.enbridge.jp/blog/2007/08/17232951.php
@@ -48,7 +50,7 @@ class PutTimeLine
 		//$stream = fopen("http://{$user}:{$password}@stream.twitter.com/spritzer.json", "r");
 		$stream = fopen("https://{$user}:{$password}@stream.twitter.com/1/statuses/filter.json?follow={$userid}&include_entities=true", "r");
 		//$stream = fopen("https://{$user}:{$password}@stream.twitter.com/1/statuses/filter.json?track={$keyword}", "r");
-		while ($json = fgets($stream )) {
+		while ($json = @fgets($stream )) {
 			$line = json_decode($json,true);
 			echo $this->setData($line);
 			ob_flush();
@@ -73,7 +75,7 @@ class PutTimeLine
 		// include_entities : エンティティを返すかどうかのオプション->画像の取得に使用
 		$api_url="http://search.twitter.com/search.json".
 				"?q=from:".$user."&rpp=100&include_entities=true";
-		$resdata=file_get_contents($api_url);
+		$resdata=@file_get_contents($api_url);
 		$twitterdata=json_decode($resdata,true);
 		$array = $twitterdata["results"];
 		$c = 0;
@@ -122,13 +124,11 @@ class PutTimeLine
 		// 表示
 		// -------------------------------------------
 		$id = $data['id_str'];
-
-		if (isset($data['geo']["coordinates"][1]) && isset($data['geo']["coordinates"][0])) {
-			$x = $data['geo']["coordinates"][1];
-			$y = $data['geo']["coordinates"][0];
-		} else {
+		$x = $data['geo']["coordinates"][1];
+		$y = $data['geo']["coordinates"][0];
+		if (!isset($x) || $x == "0" || $x == "" || !isset($y) || $y == "0" || $y == "") {
 			return null;
-		}
+		} else {}
 
 		// idが大きいので文字列での数値比較
 		if ( strlen($id) > strlen($this->since) ||
@@ -176,7 +176,7 @@ class PutTimeLine
 	 */
 	function getPosName($x, $y) {
 		$api_url="http://geoapi.heartrails.com/api/json?method=searchByGeoLocation&x=".$x."&y=".$y;
-		$resdata=file_get_contents($api_url);
+		$resdata=@file_get_contents($api_url);
 		$data=json_decode($resdata,true);
 		$res = "街データ取得失敗";
 		if ( isset($data["response"]["location"][0]) ) {
@@ -184,5 +184,15 @@ class PutTimeLine
 			$res = $d['prefecture'].$d['city'].$d['town'];
 		}
 		return $res;
+	}
+	/**
+	 * スクリーンネームからユーザーIDを取得する
+	 * @param string $screan_name
+	 * @return string
+	 */
+	function getUserId($screan_name) {
+		$api_url="https://twitter.com/users/show/".$screan_name.".xml";
+		$xml =  simplexml_load_file($api_url);
+		return $xml->id;
 	}
 }

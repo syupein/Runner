@@ -1,5 +1,5 @@
 // ---------------------------------- 設定項目 -------------------------------------------
-var userid;
+var user;
 var goalX;
 var goalY;
 var zoomD;
@@ -9,7 +9,6 @@ var zoomD;
 /* 後でjsfileに退避 */
 // google maps のアイコン
 var iconNow  = "http://chart.apis.google.com/chart?chst=d_map_pin_letter&chld=!|FF0000|FFFFFF";
-var iconBack = "http://chart.apis.google.com/chart?chst=d_map_pin_letter&chld=|00FFFF|000000";
 var iconGoal = "http://chart.apis.google.com/chart?chst=d_map_pin_letter&chld=|FFFF00|000000";
 var goalMarker;
 var map;
@@ -25,7 +24,7 @@ var timer = false;
  * zd : 初期ズーム量     : 14
  */
 function init(u, gx, gy, zd) {
-	userid = u;
+	user = u;
 	goalX = gx;
 	goalY = gy;
 	zoomD = zd;
@@ -67,7 +66,7 @@ function createMarker() {
 		});
 	mArray[mid] = new Array(
 			new google.maps.Marker(marker),
-			x,y);
+			x,y,"http://chart.apis.google.com/chart?chst=d_map_pin_letter&chld="+mid+"|00FFFF|000000");
 
 	// 吹き出し
 	var infowin = new google.maps.InfoWindow({content:document.getElementById("t"+mid).innerHTML});
@@ -118,7 +117,7 @@ function mapUpdate() {
 					document.getElementById("y"+i).value,
 					document.getElementById("x"+i).value));
 		} else {
-			mArray[i][0].setIcon(iconBack);
+			mArray[i][0].setIcon(mArray[i][3]);
 		}
 	}
 }
@@ -165,7 +164,7 @@ function requestFile()
 	if (tid != -1) {
 		tid = document.getElementById("h"+tid).value;
 	}
-	var fileName = "adapter.php?st="+ tid +"&count="+ mCount +"&userid="+userid;
+	var fileName = "adapter.php?st="+ tid +"&count="+ mCount +"&user="+user;
 	//open メソッド
 	httpobj.open( 'GET' , fileName , true );
 	keep = "";
@@ -184,7 +183,8 @@ function requestFile()
 			$(res).prependTo('#streamArea').hide().fadeIn('slow');
 			mapUpdate();
 		}else if(httpobj.readyState == 4){
-			$('#streamArea').prepend('接続が切れました。リロードしてください。').css('color', 'red');
+			requestFile();
+//			$('#streamArea').prepend('接続が切れました。リロードしてください。').css('color', 'red');
 		}
 	}
 	//send メソッド

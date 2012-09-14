@@ -1,16 +1,12 @@
 <?php
 $user = "udonTest";
 //*
-if (isset($_POST['user'])) {
+if (isset($_GET['user'])) {
+	$user = htmlspecialchars($_GET['user'], ENT_QUOTES);
+} else if (isset($_POST['user'])) {
 	$user = htmlspecialchars($_POST['user'], ENT_QUOTES);
 } else {
 	$user = 'udonTest';
-}
-if (isset($_POST['id'])) {
-	$id = htmlspecialchars($_POST['id'], ENT_QUOTES);
-} else {
-	// udonTest
-	$id = 719225070;
 }
 //*/
 ?>
@@ -18,7 +14,7 @@ if (isset($_POST['id'])) {
 <html>
 <head>
 <meta charset="utf-8">
-<title>Live</title>
+<title>ゆるゆるまらそん</title>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <script src="js/jquery.1.7.2.min.js"></script>
 <script src="js/bootstrap.min.js"></script>
@@ -39,7 +35,7 @@ if (isset($_POST['id'])) {
 <link rel="shortcut icon" href="favicon.ico">
 </head>
 <!-- ★userid★,ゴール座標経度,ゴール座標緯度,ズーム -->
-<body onload="init(<?php echo $id; ?>,135.1942, 34.6859, 14)">
+<body onload="init('<?php echo $user; ?>',135.1942, 34.6859, 14)">
 <div class="container">
 <div class="row">
 <div class="span6">
@@ -48,7 +44,7 @@ if (isset($_POST['id'])) {
 <h1>Live</h1>
 </div>
 <div id="titleright">
-<h1>IT マラソン</h1>
+<h1>ゆるゆる マラソン</h1>
 </div>
 </div>
 <div id="mapArea">
